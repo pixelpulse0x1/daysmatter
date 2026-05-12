@@ -24,7 +24,7 @@ Memory: 25.37MB
 
 ### 登录界面
 
-![image-20260512222910578](./Database/image-20260512222910578.png)
+![image-20260513005031542](./Database/image-20260513005031542.png)
 
 ### 倒数日
 
@@ -184,7 +184,7 @@ Memory: 25.37MB
 ## ✨ Live Preview
 
 ### Login Interface
-![Login Interface](./Database/image-20260512222910578.png)
+![image-20260513005043484](./Database/image-20260513005043484.png)
 
 ### Countdown Module
 ![Countdown Main View](./Database/image-20260512223741691.png)
