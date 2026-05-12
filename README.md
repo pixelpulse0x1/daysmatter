@@ -354,4 +354,4 @@ Special thanks to:
 
 ---
 
-*DaysMatter is actively maintained. Last updated: May 2024*
+*DaysMatter is actively maintained. *
