@@ -1,20 +1,37 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: ''
+name: ✨ 功能请求
+about: 为DaysMatter提出新功能建议
+title: '[功能] '
+labels: ['enhancement', 'needs-triage']
 assignees: ''
-
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+## 🎯 功能描述
+请清晰描述你希望添加的功能。
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+## 🤔 问题背景
+这个功能解决了什么痛点？为什么需要这个功能？
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+## 💡 解决方案建议
+描述你期望的功能实现方式。
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+## 🔄 替代方案
+你考虑过哪些替代方案？
+
+## 📊 优先级评估
+请评估这个功能的重要性：
+
+**影响用户数：**
+- [ ] 所有用户
+- [ ] 大部分用户
+- [ ] 部分用户
+- [ ] 少数用户
+
+**使用频率：**
+- [ ] 每天多次
+- [ ] 每天一次
+- [ ] 每周几次
+- [ ] 偶尔使用
+
+## 📎 附加信息
+添加任何其他相关信息，如截图、参考链接等。
