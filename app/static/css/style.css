@@ -730,6 +730,21 @@ body {
 .btn-sparkle { font-size: 1.2rem; transition: transform 0.3s; }
 .login-btn:hover .btn-sparkle { transform: rotate(20deg) scale(1.1); }
 
+/* ─── Settings Footer ─── */
+.settings-footer {
+  margin-top: 24px; padding-top: 16px;
+  border-top: 1px solid var(--border); text-align: center;
+}
+.settings-footer-link {
+  display: inline-flex; align-items: center;
+  font-size: 0.82rem; color: #999; text-decoration: none;
+  transition: color 0.2s;
+}
+.settings-footer-link:hover { color: var(--primary); }
+.settings-footer-copy {
+  margin-top: 6px; font-size: 0.75rem; color: #bbb;
+}
+
 /* ─── Settings Logout ─── */
 .settings-logout-section {
   margin-top: 32px; padding-top: 20px;

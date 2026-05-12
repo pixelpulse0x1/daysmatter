@@ -10,7 +10,7 @@
 <body class="login-body">
 
   <!-- Starfield Canvas -->
-  <canvas id="loginStarfield"></canvas>
+  <canvas id="loginStarfield" style="display:block;"></canvas>
 
   <!-- Language Switcher -->
   <div class="login-lang-switch">
@@ -55,8 +55,77 @@
   </div>
 
   <script>
+  // ─── Login Starfield (runs FIRST, independently) ───
+  (function(){
+    var canvas = document.getElementById('loginStarfield');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var animId, stars = [], shootingStars = [];
+
+    function rand(min,max){return Math.random()*(max-min)+min;}
+
+    function resize(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      stars = [];
+      for(var i=0;i<120;i++) stars.push({x:rand(0,canvas.width),y:rand(0,canvas.height),r:rand(0.5,2.5),a:rand(0.3,0.9),pulse:rand(0.005,0.02),dir:1});
+    }
+
+    function spawnShootingStar(){
+      var fromLeft = Math.random()>0.5;
+      shootingStars.push({
+        x: fromLeft?rand(0,canvas.width*0.2):rand(canvas.width*0.2,canvas.width),
+        y: rand(0,canvas.height*0.5),
+        vx: rand(4,10), vy: rand(2,6),
+        len: rand(60,150), alpha:rand(0.7,1),
+        life:1, decay:rand(0.005,0.015)
+      });
+    }
+
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      stars.forEach(function(s){
+        s.a+=s.pulse*s.dir; if(s.a>=0.9)s.dir=-1; if(s.a<=0.3)s.dir=1;
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle='rgba(255,255,255,'+s.a.toFixed(2)+')'; ctx.fill();
+      });
+      shootingStars.forEach(function(ss){
+        var grad=ctx.createLinearGradient(ss.x,ss.y,ss.x-ss.vx*ss.len/10,ss.y-ss.vy*ss.len/10);
+        grad.addColorStop(0,'rgba(255,255,255,'+ss.alpha.toFixed(2)+')');
+        grad.addColorStop(1,'rgba(255,255,255,0)');
+        ctx.beginPath(); ctx.moveTo(ss.x,ss.y);
+        ctx.lineTo(ss.x-ss.vx*ss.len/10,ss.y-ss.vy*ss.len/10);
+        ctx.strokeStyle=grad; ctx.lineWidth=1.5; ctx.stroke();
+        ss.x+=ss.vx; ss.y+=ss.vy; ss.life-=ss.decay; ss.alpha=ss.life;
+      });
+      shootingStars=shootingStars.filter(function(ss){return ss.life>0;});
+      animId=requestAnimationFrame(draw);
+    }
+
+    function spawnLoop(){
+      spawnShootingStar();
+      setTimeout(spawnLoop, rand(1000,3000));
+    }
+
+    resize(); window.addEventListener('resize',resize);
+    spawnLoop();
+    setTimeout(spawnShootingStar, 500);
+    setTimeout(spawnShootingStar, 1200);
+    draw();
+
+    var btn = document.getElementById('loginBtn');
+    if(btn){
+      btn.addEventListener('mouseenter',function(){
+        for(var i=0;i<6;i++) setTimeout(spawnShootingStar, i*150);
+      });
+    }
+  })();
+  </script>
+
+  <script>
   // ─── Login Page i18n ───
-  const loginI18n = {
+  try {
+  var loginI18n = {
     zh: {
       'Open Wish Gate': '开启愿望之门',
       'Shooting Star Subtitle': '每一颗流星，都是一个未完成的愿望',
@@ -77,11 +146,11 @@
     }
   };
 
-  let currentLoginLang = sessionStorage.getItem('login_lang') || 'zh';
-  document.getElementById('loginLangSelect').value = currentLoginLang;
+  var currentLoginLang = sessionStorage.getItem('login_lang') || 'zh';
+  var langSel = document.getElementById('loginLangSelect');
+  if (langSel) langSel.value = currentLoginLang;
 
-  // Error message translations (backend sends Chinese)
-  const loginErrorI18n = {
+  var loginErrorI18n = {
     zh: {
       '身份识别失败，请检查用户名和秘钥。': '身份识别失败，请检查用户名和秘钥。',
       '尝试次数过多，请在': '尝试次数过多，请在',
@@ -102,13 +171,13 @@
   }
 
   function applyLoginLang() {
-    const dict = loginI18n[currentLoginLang] || loginI18n.zh;
-    document.querySelectorAll('[data-login-i18n]').forEach(el => {
-      const key = el.getAttribute('data-login-i18n');
+    var dict = loginI18n[currentLoginLang] || loginI18n.zh;
+    document.querySelectorAll('[data-login-i18n]').forEach(function(el) {
+      var key = el.getAttribute('data-login-i18n');
       if (dict[key]) el.textContent = dict[key];
     });
-    document.querySelectorAll('[data-login-i18n-placeholder]').forEach(el => {
-      const key = el.getAttribute('data-login-i18n-placeholder');
+    document.querySelectorAll('[data-login-i18n-placeholder]').forEach(function(el) {
+      var key = el.getAttribute('data-login-i18n-placeholder');
       if (dict[key]) el.placeholder = dict[key];
     });
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
@@ -116,87 +185,20 @@
   }
 
   function translateLoginError() {
-    const errEl = document.querySelector('.login-error');
+    var errEl = document.querySelector('.login-error');
     if (!errEl) return;
-    const errMap = loginErrorI18n[currentLoginLang] || loginErrorI18n.zh;
-    let text = errEl.textContent;
-    for (const [zh, translated] of Object.entries(errMap)) {
-      text = text.replace(zh, translated);
+    var errMap = loginErrorI18n[currentLoginLang] || loginErrorI18n.zh;
+    var text = errEl.textContent;
+    for (var zh in errMap) {
+      if (errMap.hasOwnProperty(zh)) {
+        text = text.replace(zh, errMap[zh]);
+      }
     }
     errEl.textContent = text;
   }
 
-  // Apply saved language on load
   applyLoginLang();
-
-  // ─── Login Starfield (enhanced shooting stars) ───
-  (function(){
-    const canvas = document.getElementById('loginStarfield');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let animId, stars = [], shootingStars = [];
-
-    function rand(min,max){return Math.random()*(max-min)+min;}
-
-    function resize(){
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      stars = [];
-      for(let i=0;i<120;i++) stars.push({x:rand(0,canvas.width),y:rand(0,canvas.height),r:rand(0.5,2.5),a:rand(0.3,0.9),pulse:rand(0.005,0.02),dir:1});
-    }
-
-    function spawnShootingStar(){
-      const fromLeft = Math.random()>0.5;
-      shootingStars.push({
-        x: fromLeft?rand(0,canvas.width*0.2):rand(canvas.width*0.2,canvas.width),
-        y: rand(0,canvas.height*0.5),
-        vx: rand(4,10), vy: rand(2,6),
-        len: rand(60,150), alpha:rand(0.7,1),
-        life:1, decay:rand(0.005,0.015)
-      });
-    }
-
-    function draw(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      stars.forEach(s=>{
-        s.a+=s.pulse*s.dir; if(s.a>=0.9)s.dir=-1; if(s.a<=0.3)s.dir=1;
-        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-        ctx.fillStyle=`rgba(255,255,255,${s.a.toFixed(2)})`; ctx.fill();
-      });
-      shootingStars.forEach(ss=>{
-        const grad=ctx.createLinearGradient(ss.x,ss.y,ss.x-ss.vx*ss.len/10,ss.y-ss.vy*ss.len/10);
-        grad.addColorStop(0,`rgba(255,255,255,${ss.alpha.toFixed(2)})`);
-        grad.addColorStop(1,'rgba(255,255,255,0)');
-        ctx.beginPath(); ctx.moveTo(ss.x,ss.y);
-        ctx.lineTo(ss.x-ss.vx*ss.len/10,ss.y-ss.vy*ss.len/10);
-        ctx.strokeStyle=grad; ctx.lineWidth=1.5; ctx.stroke();
-        ss.x+=ss.vx; ss.y+=ss.vy; ss.life-=ss.decay; ss.alpha=ss.life;
-      });
-      shootingStars=shootingStars.filter(ss=>ss.life>0);
-      animId=requestAnimationFrame(draw);
-    }
-
-    function spawnLoop(){
-      spawnShootingStar();
-      // More frequent than wishlist: every 1-3 seconds
-      setTimeout(spawnLoop, rand(1000,3000));
-    }
-
-    resize(); window.addEventListener('resize',resize);
-    spawnLoop();
-    // Fire one immediately
-    setTimeout(spawnShootingStar, 500);
-    setTimeout(spawnShootingStar, 1200);
-    draw();
-
-    // Login button: accelerate stars on hover
-    const btn = document.getElementById('loginBtn');
-    if(btn){
-      btn.addEventListener('mouseenter',()=>{
-        for(let i=0;i<6;i++) setTimeout(spawnShootingStar, i*150);
-      });
-    }
-  })();
+  } catch(e) {}
   </script>
 </body>
 </html>
