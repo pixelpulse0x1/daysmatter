@@ -8,7 +8,7 @@ services:
     # 构建当前目录下的 Dockerfile
     build: .
     # 镜像名称
-    image: daysmatter
+    image: pixelpulse01/daysmatter:v0.4.6.2
     # 容器名称
     container_name: daysmatter
     # 重启策略: 除非手动停止，否则总是重启
