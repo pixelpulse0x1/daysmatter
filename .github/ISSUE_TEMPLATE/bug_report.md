@@ -1,38 +1,51 @@
 ---
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
+name: 🐛 Bug报告
+about: 报告DaysMatter的bug或问题
+title: '[BUG] '
+labels: ['bug', 'needs-triage']
 assignees: ''
-
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## 🐛 问题描述
+请清晰简洁地描述你遇到的问题。
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+## 🔍 重现步骤
+1. 进入 '...'
+2. 点击 '....'
+3. 滚动到 '....'
+4. 看到错误
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## 📸 截图/录屏
+如果可能，请添加截图或录屏帮助说明问题。
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+## 💻 环境信息
+**部署方式：**
+- [ ] Docker
+- [ ] 直接运行
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+**浏览器：**
+- [ ] Chrome (版本：___)
+- [ ] Firefox (版本：___)
+- [ ] Safari (版本：___)
+- [ ] Edge (版本：___)
+- [ ] 其他：___
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**操作系统：**
+- [ ] Windows (版本：___)
+- [ ] macOS (版本：___)
+- [ ] Linux (发行版：___)
+- [ ] 其他：___
 
-**Additional context**
-Add any other context about the problem here.
+**DaysMatter版本：** v0.4.6.1（可在设置页面查看）
+
+## 📝 期望行为
+清晰简洁地描述你期望发生的事情。
+
+## 📋 日志信息
+如果可能，请提供相关日志（位于`/opt/docker-stacks/daysmatter/log/app.log`）：
+
+## 🔧 尝试过的解决方案
+描述你已经尝试过的解决方法。
+
+## 📎 附加信息
+添加任何其他有助于解决问题的信息。
