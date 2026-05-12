@@ -3,13 +3,6 @@
   <p align="center"><em>流星划过许愿单 — 你的私人倒数日、愿望矩阵与备忘录系统</em></p>
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/version-v0.4.6.1-blue" alt="version">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
-  <img src="https://img.shields.io/badge/python-3.12-blue" alt="python">
-  <img src="https://img.shields.io/badge/docker-ready-brightgreen" alt="docker">
-</p>
-
 # 中文介绍
 
 ---
@@ -96,10 +89,64 @@ Memory: 25.37MB
 ## 📦 快速开始 (Docker)
 
 ```bash
-上传中，敬请期待
+https://hub.docker.com/r/pixelpulse01/daysmatter
 ```
 
 默认登录凭证: `admin` / `change_me_please`（**生产环境务必修改！**）
+
+### 方案一：Docker Compose 部署（推荐）
+
+只需创建一个 `docker-compose.yml` 文件并运行。
+
+```YAML
+# DaysMatter — Docker Compose 部署文件
+# 官方镜像: pixelpulse01/daysmatter:latest
+
+services:
+  daysmatter:
+    image: pixelpulse01/daysmatter:latest
+    container_name: daysmatter
+    restart: unless-stopped
+
+    # 环境变量：用户可以根据需要自行修改
+    environment:
+      - TZ=Asia/Shanghai
+      - APP_USERNAME=admin             # 默认登录名
+      - APP_PASSWORD=password123       # 默认密码，提醒用户及时修改
+      - SECRET_KEY=your_random_secret_string # 随机字符密钥
+
+    # 端口映射: 宿主机端口(9050) : 容器内部端口(3150)
+    ports:
+      - "9050:3150"
+
+    # 数据持久化
+    # 建议将数据保存在当前目录下的 data 文件夹内，方便迁移和备份
+    volumes:
+      - ./data:/data
+```
+
+**部署命令：**
+
+```Bash
+docker compose up -d
+```
+
+------
+
+### 方案二：Docker Run 单行命令部署
+
+```Bash
+docker run -d \
+  --name daysmatter \
+  --restart unless-stopped \
+  -p 9050:3150 \
+  -e TZ=Asia/Shanghai \
+  -e APP_USERNAME=admin \
+  -e APP_PASSWORD=password123 \
+  -e SECRET_KEY=k9#f2Lz!P9vQ \
+  -v $(pwd)/data:/data \
+  pixelpulse01/daysmatter:latest
+```
 
 ---
 
@@ -162,15 +209,6 @@ Memory: 25.37MB
 <p align="center">
   <h1 align="center">🌠 DaysMatter</h1>
   <p align="center"><em>Shooting Stars Wishlist — Your Personal Countdown, Wish Matrix & Memo System</em></p>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/version-v0.4.6.1-blue" alt="version">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
-  <img src="https://img.shields.io/badge/python-3.12-blue" alt="python">
-  <img src="https://img.shields.io/badge/docker-ready-brightgreen" alt="docker">
-  <img src="https://img.shields.io/badge/status-active-success" alt="status">
-  <img src="https://img.shields.io/badge/i18n-EN%2FCN-yellow" alt="i18n">
 </p>
 
 ---
@@ -247,7 +285,7 @@ Memory: 25.37MB
 ## 🐳 Quick Start (Docker)
 
 ```bash
-# Coming soon - Upload in progress
+https://hub.docker.com/r/pixelpulse01/daysmatter
 ```
 
 **Default Credentials**: `admin` / `change_me_please` (**Must change in production!**)
