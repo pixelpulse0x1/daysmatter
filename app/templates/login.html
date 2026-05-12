@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DaysMatter — 开启愿望之门</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon/favicon-96x96.png') }}" sizes="96x96" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body class="login-body">
+
+  <!-- Starfield Canvas -->
+  <canvas id="loginStarfield"></canvas>
+
+  <!-- Language Switcher -->
+  <div class="login-lang-switch">
+    <select id="loginLangSelect" onchange="switchLoginLang(this.value)">
+      <option value="zh">中文</option>
+      <option value="en">English</option>
+    </select>
+  </div>
+
+  <!-- Login Card -->
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-icon">🌠</div>
+      <h1 class="login-title" data-login-i18n="Open Wish Gate">开启愿望之门</h1>
+      <p class="login-subtitle" data-login-i18n="Shooting Star Subtitle">每一颗流星，都是一个未完成的愿望</p>
+
+      {% if error %}
+      <div class="login-error" data-login-i18n-error="{{ error }}">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" class="login-form">
+        <div class="input-group">
+          <span class="input-icon">👤</span>
+          <input type="text" name="username" data-login-i18n-placeholder="Identity Code" placeholder="身份识别" required autofocus />
+        </div>
+        <div class="input-group">
+          <span class="input-icon">🔑</span>
+          <input type="password" name="password" data-login-i18n-placeholder="Secret Key" placeholder="开启秘钥" required />
+        </div>
+
+        <label class="remember-row">
+          <input type="checkbox" name="remember" />
+          <span data-login-i18n="Stay Signed In">保持登录状态</span>
+        </label>
+
+        <button type="submit" class="login-btn" id="loginBtn">
+          <span class="btn-text" data-login-i18n="Enter Wish Space">进入愿望空间</span>
+          <span class="btn-sparkle">✨</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+  // ─── Login Page i18n ───
+  const loginI18n = {
+    zh: {
+      'Open Wish Gate': '开启愿望之门',
+      'Shooting Star Subtitle': '每一颗流星，都是一个未完成的愿望',
+      'Identity Code': '身份识别',
+      'Secret Key': '开启秘钥',
+      'Stay Signed In': '保持登录状态',
+      'Enter Wish Space': '进入愿望空间',
+      'Language': '语言',
+    },
+    en: {
+      'Open Wish Gate': 'Open the Wish Gate',
+      'Shooting Star Subtitle': 'Every shooting star is an unfulfilled wish.',
+      'Identity Code': 'Identity Code',
+      'Secret Key': 'Secret Key',
+      'Stay Signed In': 'Stay Signed In',
+      'Enter Wish Space': 'Enter Wish Space',
+      'Language': 'Language',
+    }
+  };
+
+  let currentLoginLang = sessionStorage.getItem('login_lang') || 'zh';
+  document.getElementById('loginLangSelect').value = currentLoginLang;
+
+  // Error message translations (backend sends Chinese)
+  const loginErrorI18n = {
+    zh: {
+      '身份识别失败，请检查用户名和秘钥。': '身份识别失败，请检查用户名和秘钥。',
+      '尝试次数过多，请在': '尝试次数过多，请在',
+      '秒后重试。': '秒后重试。',
+    },
+    en: {
+      '身份识别失败，请检查用户名和秘钥。': 'Identity verification failed. Please check your username and secret key.',
+      '尝试次数过多，请在': 'Too many attempts. Please retry in ',
+      '秒后重试。': ' seconds.',
+    }
+  };
+
+  function switchLoginLang(lang) {
+    currentLoginLang = lang;
+    sessionStorage.setItem('login_lang', lang);
+    applyLoginLang();
+    translateLoginError();
+  }
+
+  function applyLoginLang() {
+    const dict = loginI18n[currentLoginLang] || loginI18n.zh;
+    document.querySelectorAll('[data-login-i18n]').forEach(el => {
+      const key = el.getAttribute('data-login-i18n');
+      if (dict[key]) el.textContent = dict[key];
+    });
+    document.querySelectorAll('[data-login-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-login-i18n-placeholder');
+      if (dict[key]) el.placeholder = dict[key];
+    });
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.title = currentLoginLang === 'zh' ? 'DaysMatter — 开启愿望之门' : 'DaysMatter — Open the Wish Gate';
+  }
+
+  function translateLoginError() {
+    const errEl = document.querySelector('.login-error');
+    if (!errEl) return;
+    const errMap = loginErrorI18n[currentLoginLang] || loginErrorI18n.zh;
+    let text = errEl.textContent;
+    for (const [zh, translated] of Object.entries(errMap)) {
+      text = text.replace(zh, translated);
+    }
+    errEl.textContent = text;
+  }
+
+  // Apply saved language on load
+  applyLoginLang();
+
+  // ─── Login Starfield (enhanced shooting stars) ───
+  (function(){
+    const canvas = document.getElementById('loginStarfield');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animId, stars = [], shootingStars = [];
+
+    function rand(min,max){return Math.random()*(max-min)+min;}
+
+    function resize(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      stars = [];
+      for(let i=0;i<120;i++) stars.push({x:rand(0,canvas.width),y:rand(0,canvas.height),r:rand(0.5,2.5),a:rand(0.3,0.9),pulse:rand(0.005,0.02),dir:1});
+    }
+
+    function spawnShootingStar(){
+      const fromLeft = Math.random()>0.5;
+      shootingStars.push({
+        x: fromLeft?rand(0,canvas.width*0.2):rand(canvas.width*0.2,canvas.width),
+        y: rand(0,canvas.height*0.5),
+        vx: rand(4,10), vy: rand(2,6),
+        len: rand(60,150), alpha:rand(0.7,1),
+        life:1, decay:rand(0.005,0.015)
+      });
+    }
+
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      stars.forEach(s=>{
+        s.a+=s.pulse*s.dir; if(s.a>=0.9)s.dir=-1; if(s.a<=0.3)s.dir=1;
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(255,255,255,${s.a.toFixed(2)})`; ctx.fill();
+      });
+      shootingStars.forEach(ss=>{
+        const grad=ctx.createLinearGradient(ss.x,ss.y,ss.x-ss.vx*ss.len/10,ss.y-ss.vy*ss.len/10);
+        grad.addColorStop(0,`rgba(255,255,255,${ss.alpha.toFixed(2)})`);
+        grad.addColorStop(1,'rgba(255,255,255,0)');
+        ctx.beginPath(); ctx.moveTo(ss.x,ss.y);
+        ctx.lineTo(ss.x-ss.vx*ss.len/10,ss.y-ss.vy*ss.len/10);
+        ctx.strokeStyle=grad; ctx.lineWidth=1.5; ctx.stroke();
+        ss.x+=ss.vx; ss.y+=ss.vy; ss.life-=ss.decay; ss.alpha=ss.life;
+      });
+      shootingStars=shootingStars.filter(ss=>ss.life>0);
+      animId=requestAnimationFrame(draw);
+    }
+
+    function spawnLoop(){
+      spawnShootingStar();
+      // More frequent than wishlist: every 1-3 seconds
+      setTimeout(spawnLoop, rand(1000,3000));
+    }
+
+    resize(); window.addEventListener('resize',resize);
+    spawnLoop();
+    // Fire one immediately
+    setTimeout(spawnShootingStar, 500);
+    setTimeout(spawnShootingStar, 1200);
+    draw();
+
+    // Login button: accelerate stars on hover
+    const btn = document.getElementById('loginBtn');
+    if(btn){
+      btn.addEventListener('mouseenter',()=>{
+        for(let i=0;i<6;i++) setTimeout(spawnShootingStar, i*150);
+      });
+    }
+  })();
+  </script>
+</body>
+</html>

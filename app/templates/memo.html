@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block body_attrs %} data-page="memo"{% endblock %}
+
+{% block content %}
+<div class="content-header">
+  <h2 data-i18n="Memo">备忘录</h2>
+  <div class="memo-header-actions">
+    <button class="btn-small" id="btnStarFilter" onclick="filterByStar()" data-i18n="Starred">★ 星标</button>
+    <button class="btn-add" onclick="openMemoEditor()" data-i18n="Compose">+ 撰写</button>
+  </div>
+</div>
+
+<!-- Memo List View -->
+<div class="memo-list" id="memoList"></div>
+
+<!-- Memo Detail (Read Mode) -->
+<div class="memo-detail" id="memoDetail" style="display:none;">
+  <div class="memo-detail-toolbar">
+    <button class="btn-small" onclick="closeMemoDetail()">← 返回</button>
+    <div class="memo-detail-actions">
+      <button class="btn-small" id="memoDetailStar" onclick="toggleDetailStar()">★</button>
+      <button class="btn-small" onclick="editCurrentMemo()" data-i18n="Edit">编辑</button>
+      <button class="btn-small btn-del" onclick="deleteCurrentMemo()" data-i18n="Delete">删除</button>
+    </div>
+  </div>
+  <div class="memo-detail-subject" id="memoDetailSubject"></div>
+  <div class="memo-detail-meta" id="memoDetailMeta"></div>
+  <div class="memo-detail-content" id="memoDetailContent"></div>
+  <div class="memo-detail-attachments" id="memoDetailAttachments"></div>
+</div>
+
+<!-- Memo Editor (Vditor Markdown) -->
+<div class="memo-editor" id="memoEditor" style="display:none;">
+  <input type="hidden" id="memoId" />
+  <input type="text" id="memoSubject" class="memo-subject-input" data-i18n-placeholder="Enter subject" placeholder="输入主题" />
+  <div id="memoVditorContainer"><div id="memoVditorEditor"></div></div>
+
+  <!-- Attachment Bar -->
+  <div class="memo-attachment-bar" id="memoAttachmentBar">
+    <div class="memo-attachment-header">
+      <span data-i18n="Attachments">附件</span>
+      <input type="file" id="memoAttachFile" accept="*/*" multiple style="display:none" onchange="onMemoAttachSelected()" />
+      <button class="btn-small" onclick="document.getElementById('memoAttachFile').click()" data-i18n="Upload Attachment">📎 上传附件</button>
+    </div>
+    <div class="memo-attachment-list" id="memoAttachmentList"></div>
+  </div>
+
+  <div class="memo-editor-actions">
+    <div></div>
+    <div class="memo-editor-right">
+      <button class="btn-small" onclick="cancelMemoEdit()" data-i18n="Cancel">取消</button>
+      <button class="btn-save" onclick="saveMemo()" data-i18n="Save">保存</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

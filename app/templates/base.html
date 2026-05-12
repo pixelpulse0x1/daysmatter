@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DaysMatter</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon/favicon-96x96.png') }}" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon/favicon.svg') }}" />
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}" />
+  <meta name="apple-mobile-web-app-title" content="DaysMatter" />
+  <link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- Quill.js Rich Text Editor -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet" />
+  <!-- GLightbox -->
+  <link href="https://cdn.jsdelivr.net/npm/glightbox@3/dist/css/glightbox.min.css" rel="stylesheet" />
+  <!-- Flatpickr Date Picker -->
+  <link href="https://cdn.jsdelivr.net/npm/flatpickr@4/dist/themes/airbnb.css" rel="stylesheet" />
+  <!-- Vditor Markdown Editor -->
+  <link href="https://cdn.jsdelivr.net/npm/vditor@3/dist/index.min.css" rel="stylesheet" />
+</head>
+<body{% block body_attrs %}{% endblock %}>
+
+  <!-- ═══ 页眉 ═══ -->
+  <header class="header" id="header">
+    <div class="nixie-clock" id="nixieClock">
+      <span class="nixie-char">0</span><span class="nixie-char">0</span>
+      <span class="nixie-separator">:</span>
+      <span class="nixie-char">0</span><span class="nixie-char">0</span>
+      <span class="nixie-separator">:</span>
+      <span class="nixie-char">0</span><span class="nixie-char">0</span>
+    </div>
+    <div class="header-date" id="headerDate">----年--月--日 周日 新年还有---天</div>
+    <div class="header-quote" id="headerQuote"></div>
+  </header>
+
+  <!-- ═══ 导航栏 ═══ -->
+  <nav class="navbar" id="navbar">
+    <a href="/" class="nav-item" data-page="daysmatter" data-i18n="Countdown Days">倒数日</a>
+    <a href="/wishlist" class="nav-item" data-page="wishlist" data-i18n="Wishlist">愿望单</a>
+    <a href="/memo" class="nav-item" data-page="memo" data-i18n="Memo">备忘录</a>
+    <a href="/settings" class="nav-item" data-page="settings" data-i18n="Settings">设置</a>
+  </nav>
+
+  <!-- ═══ 主体 (SPA-replaceable) ═══ -->
+  <div id="app-content">
+    <div class="main-layout">
+      {% block sidebar %}{% endblock %}
+      <main class="content" id="content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+    <footer class="footer">
+      <span>DaysMatter</span>
+    </footer>
+  </div>
+
+  <!-- ═══ 共享弹窗：事项编辑 ═══ -->
+  <div class="modal-overlay" id="eventModalOverlay">
+    <div class="modal" id="eventModal">
+      <div class="modal-header">
+        <h3 id="eventModalTitle">添加事项</h3>
+        <button class="modal-close" onclick="closeEventModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="evId" />
+        <label data-i18n="Event Name">事项名称</label>
+        <input type="text" id="evName" data-i18n-placeholder="Enter event name" placeholder="输入事件名称" />
+        <label data-i18n="Target Date">目标日</label>
+        <input type="date" id="evDate" />
+        <label data-i18n="Category">所属倒数本</label>
+        <select id="evCategory"></select>
+        <label><input type="checkbox" id="evPinned" /> <span data-i18n="Pin">置顶</span></label>
+        <label><input type="checkbox" id="evShowOnHome" /> <span data-i18n="Show on Home">首页展示</span></label>
+        <label data-i18n="Repeat">重复</label>
+        <div class="repeat-row">
+          <input type="number" id="evRepeatInterval" value="0" min="0" max="99" style="width:70px" data-i18n-placeholder="Repeat interval (0=off)" placeholder="0=关闭" onchange="onRepeatChange()" />
+          <select id="evRepeatUnit" onchange="onRepeatChange()">
+            <option value="day" data-i18n="Day(s)">日</option>
+            <option value="week" data-i18n="Week(s)">周</option>
+            <option value="month" data-i18n="Month(s)">月</option>
+          </select>
+        </div>
+        <div style="font-size:0.75rem;color:#999;margin-top:4px;" data-i18n="Repeat interval (0=off)">0表示不重复</div>
+        <label><input type="checkbox" id="evIncludeStart" /> <span data-i18n="Include start day (+1 day)">包含起始日（+1天）</span></label>
+        <label><input type="checkbox" id="evHighlight" /> <span data-i18n="Highlight">高亮醒目</span></label>
+        <label data-i18n="Event Color">事件颜色</label>
+        <input type="color" id="evColor" value="#4A90D9" />
+        <label data-i18n="Icon">图标</label>
+        <div class="icon-picker" id="iconPicker"></div>
+        <input type="hidden" id="evIcon" value="default" />
+        <label data-i18n="Note">备注</label>
+        <textarea id="evNote" rows="3" data-i18n-placeholder="Additional notes..." placeholder="补充事项..."></textarea>
+        <div id="evImageSection" style="display:none;">
+        <label data-i18n="Image">附图</label>
+        <div class="image-upload-row">
+          <input type="file" id="evImageFile" accept="image/*" multiple style="display:none" />
+          <button type="button" class="btn-small" onclick="document.getElementById('evImageFile').click()" data-i18n="Add Image">上传图片</button>
+        </div>
+        <div class="image-preview" id="imagePreview"></div>
+        <input type="hidden" id="evImages" />
+        </div>
+        <div class="modal-actions">
+          <button class="btn-archive" id="btnArchive" onclick="archiveEvent()" data-i18n="Archive event">归档</button>
+          <button class="btn-delete" id="btnDelete" onclick="deleteEventConfirm()" data-i18n="Delete">删除</button>
+          <button class="btn-save" onclick="saveEvent()" data-i18n="Save">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 共享弹窗：壁纸管理 ═══ -->
+  <div class="modal-overlay" id="wallpaperManagerOverlay">
+    <div class="modal modal-settings">
+      <div class="modal-header">
+        <h3 data-i18n="Wallpaper Management">壁纸管理</h3>
+        <button class="modal-close" onclick="closeWallpaperManager()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="wallpaper-preview" id="wallpaperPreview"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="file" id="wallpaperFile" accept="image/*" style="display:none" onchange="onWallpaperFileSelected()" />
+          <button class="btn-small" onclick="document.getElementById('wallpaperFile').click()" data-i18n="Upload Wallpaper">上传壁纸</button>
+          <button class="btn-small" onclick="clearWallpaper()" data-i18n="Clear Wallpaper">清除壁纸</button>
+        </div>
+        <div class="wallpaper-gallery" id="wallpaperGallery"></div>
+        <div class="modal-actions">
+          <button class="btn-save" onclick="applyWallpaperSelection()" data-i18n="Apply">应用</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 共享弹窗：倒数本管理 ═══ -->
+  <div class="modal-overlay" id="catManagerOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 data-i18n="Category Management">倒数本管理</h3>
+        <button class="modal-close" onclick="closeCategoryManager()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="cat-manager" id="catManager"></div>
+        <div style="margin-top:12px;display:flex;gap:6px;">
+          <input type="text" id="newCatName" data-i18n-placeholder="New category name" placeholder="新倒数本名称" style="flex:1;" />
+          <button class="btn-small" onclick="addCategoryFromManager()" data-i18n="Add">添加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1/dist/confetti.browser.min.js"></script>
+  <!-- Quill.js Rich Text Editor -->
+  <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
+  <!-- GLightbox -->
+  <script src="https://cdn.jsdelivr.net/npm/glightbox@3/dist/js/glightbox.min.js"></script>
+  <!-- Flatpickr Date Picker -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4/dist/l10n/zh.js"></script>
+  <!-- Vditor Markdown Editor -->
+  <script src="https://cdn.jsdelivr.net/npm/vditor@3/dist/index.min.js"></script>
+  <!-- Wishlist Starfield VFX -->
+  <script src="{{ url_for('static', filename='js/wishlist_vfx.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

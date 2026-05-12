@@ -1,0 +1,37 @@
+# DaysMatter — Docker Compose 编排文件
+# 使用方式: docker compose up -d --build
+
+version: "3.8"
+
+services:
+  daysmatter:
+    # 构建当前目录下的 Dockerfile
+    build: .
+    # 镜像名称
+    image: daysmatter
+    # 容器名称
+    container_name: daysmatter
+    # 重启策略: 除非手动停止，否则总是重启
+    restart: unless-stopped
+
+    # 环境变量
+    environment:
+      # 容器时区
+      - TZ=Asia/Shanghai
+      # 登录用户名 (生产环境请修改)
+      - APP_USERNAME=admin
+      # 登录密码 (生产环境请务必修改)
+      - APP_PASSWORD=change_me_please
+      # Flask Session 签名密钥 (生产环境建议使用随机字符串)
+      - SECRET_KEY=k9#f2Lz!P9vQ
+
+    # 端口映射: 宿主机:容器
+    # 访问 http://localhost:9050
+    ports:
+      - "9050:3150"
+
+    # 数据持久化卷
+    # 宿主机路径 : 容器内路径
+    # 包含: 数据库、上传文件、壁纸、配置文件、日志
+    volumes:
+      - /opt/docker-stacks/daysmatter:/data

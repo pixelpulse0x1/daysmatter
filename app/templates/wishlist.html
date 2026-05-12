@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block body_attrs %} data-page="wishlist"{% endblock %}
+
+{% block content %}
+<!-- Save Toast -->
+<div class="save-toast-wish" id="saveToastWish" style="display:none;">
+  <span class="save-toast-icon">✓</span>
+  <span data-i18n="Saved successfully">数据已持久化</span>
+</div>
+<div class="content-header">
+  <h2 data-i18n="Wishlist">愿望单</h2>
+  <div class="wishlist-header-actions">
+    <input type="text" id="quickAddInput" class="quick-add-input" data-i18n-placeholder="Quick add wish..." placeholder="快速输入愿望..." />
+    <button class="btn-add" onclick="openWishEditor()" data-i18n="Add Wish">+ 添加愿望</button>
+  </div>
+</div>
+
+<!-- Top Tab Bar -->
+<div class="wish-tabs-bar">
+  <div class="wish-tabs">
+    <button class="wish-tab active" data-tab="all" onclick="switchTab('all')" data-i18n="All Wishes">全部愿望</button>
+    <button class="wish-tab" data-tab="draft" onclick="switchTab('draft')" data-i18n="Draft">草稿</button>
+    <button class="wish-tab" data-tab="active" onclick="switchTab('active')" data-i18n="Active">进行中</button>
+    <button class="wish-tab tab-achieved" data-tab="achieved" onclick="switchTab('achieved')" data-i18n="Achieved">已达成</button>
+  </div>
+  <div class="wish-achieved-count" id="achievedCount">
+    <span data-i18n="Total Achieved">累计达成</span>: <strong id="achievedCountNum">0</strong>
+  </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="wish-stats" id="wishStats">
+  <div class="stat-item stat-north-star">
+    <span class="stat-dot"></span>
+    <span class="stat-label" data-i18n="North Star">人生核心目标</span>
+    <span class="stat-count" id="statNorthStar">0</span>
+  </div>
+  <div class="stat-item stat-sleeping-giant">
+    <span class="stat-dot"></span>
+    <span class="stat-label" data-i18n="Sleeping Giant">重要但需破冰</span>
+    <span class="stat-count" id="statSleepingGiant">0</span>
+  </div>
+  <div class="stat-item stat-sweet-treat">
+    <span class="stat-dot"></span>
+    <span class="stat-label" data-i18n="Sweet Treat">高多巴胺奖励</span>
+    <span class="stat-count" id="statSweetTreat">0</span>
+  </div>
+  <div class="stat-item stat-leisure-cloud">
+    <span class="stat-dot"></span>
+    <span class="stat-label" data-i18n="Leisure Cloud">随缘心愿</span>
+    <span class="stat-count" id="statLeisureCloud">0</span>
+  </div>
+</div>
+
+<!-- Matrix Grid -->
+<div class="wish-matrix" id="wishMatrix">
+  <!-- Q2: 重要但需破冰 (top-left) -->
+  <div class="quadrant q-sleeping-giant" data-quadrant="sleeping_giant"
+       ondragover="onMatrixDragOver(event)" ondrop="onMatrixDrop(event, 'sleeping_giant')">
+    <div class="quadrant-header">
+      <span class="quadrant-icon">🦣</span>
+      <span data-i18n="Sleeping Giant">重要但需破冰</span>
+      <span class="quadrant-hint" data-i18n="High Impact · Low Desire">高影响 · 低渴望</span>
+    </div>
+    <div class="quadrant-body" id="quadrant-sleeping_giant"></div>
+  </div>
+
+  <!-- Q1: 人生核心目标 (top-right) -->
+  <div class="quadrant q-north-star" data-quadrant="north_star"
+       ondragover="onMatrixDragOver(event)" ondrop="onMatrixDrop(event, 'north_star')">
+    <div class="quadrant-header">
+      <span class="quadrant-icon">⭐</span>
+      <span data-i18n="North Star">人生核心目标</span>
+      <span class="quadrant-hint" data-i18n="High Impact · High Desire">高影响 · 高渴望</span>
+    </div>
+    <div class="quadrant-body" id="quadrant-north_star"></div>
+  </div>
+
+  <!-- Q4: 随缘心愿 (bottom-left) -->
+  <div class="quadrant q-leisure-cloud" data-quadrant="leisure_cloud"
+       ondragover="onMatrixDragOver(event)" ondrop="onMatrixDrop(event, 'leisure_cloud')">
+    <div class="quadrant-header">
+      <span class="quadrant-icon">☁️</span>
+      <span data-i18n="Leisure Cloud">随缘心愿</span>
+      <span class="quadrant-hint" data-i18n="Low Impact · Low Desire">低影响 · 低渴望</span>
+    </div>
+    <div class="quadrant-body" id="quadrant-leisure_cloud"></div>
+  </div>
+
+  <!-- Q3: 高多巴胺奖励 (bottom-right) -->
+  <div class="quadrant q-sweet-treat" data-quadrant="sweet_treat"
+       ondragover="onMatrixDragOver(event)" ondrop="onMatrixDrop(event, 'sweet_treat')">
+    <div class="quadrant-header">
+      <span class="quadrant-icon">🍬</span>
+      <span data-i18n="Sweet Treat">高多巴胺奖励</span>
+      <span class="quadrant-hint" data-i18n="Low Impact · High Desire">低影响 · 高渴望</span>
+    </div>
+    <div class="quadrant-body" id="quadrant-sweet_treat"></div>
+  </div>
+</div>
+
+<!-- Axis Labels -->
+<div class="matrix-axis-labels">
+  <span class="axis-x-label" data-i18n="Life Ripple">← 人生影响力 →</span>
+  <span class="axis-y-label" data-i18n="Heart's Fire">← 内心渴望值 →</span>
+</div>
+
+<!-- ═══ Wish Editor Modal ═══ -->
+<div class="modal-overlay" id="wishEditorOverlay">
+  <div class="modal" id="wishEditorModal">
+    <div class="modal-header">
+      <h3 id="wishEditorTitle" data-i18n="Add Wish">添加愿望</h3>
+      <button class="modal-close" onclick="closeWishEditor()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="wishId" />
+
+      <label data-i18n="Wish Title">愿望标题</label>
+      <input type="text" id="wishTitle" data-i18n-placeholder="Enter wish title" placeholder="输入愿望标题" />
+
+      <label data-i18n="Description">描述</label>
+      <textarea id="wishDesc" rows="2" data-i18n-placeholder="Wish description..." placeholder="愿望描述..."></textarea>
+
+      <!-- Score Sliders -->
+      <div class="score-sliders">
+        <div class="score-slider-group">
+          <label data-i18n="Life Ripple">人生影响力</label>
+          <div class="slider-row">
+            <input type="range" id="wishRipple" min="1" max="100" value="50" oninput="onScoreSliderChange()" />
+            <span class="slider-value" id="rippleValue">50</span>
+          </div>
+        </div>
+        <div class="score-slider-group">
+          <label data-i18n="Heart's Fire">内心渴望值</label>
+          <div class="slider-row">
+            <input type="range" id="wishFire" min="1" max="100" value="50" oninput="onScoreSliderChange()" />
+            <span class="slider-value" id="fireValue">50</span>
+          </div>
+        </div>
+        <div class="score-slider-group">
+          <label data-i18n="Difficulty">实现难度</label>
+          <div class="slider-row">
+            <input type="range" id="wishDifficulty" min="1" max="100" value="50" oninput="onScoreSliderChange()" />
+            <span class="slider-value" id="difficultyValue">50</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROI Preview -->
+      <div class="roi-preview" id="roiPreview">
+        <span data-i18n="Priority Score">优先级分值</span>: <strong id="roiScore">50.0</strong>
+        <span class="roi-quadrant" id="roiQuadrant"></span>
+      </div>
+
+      <!-- Status (edit mode only) -->
+      <div id="wishStatusSection" style="display:none;">
+        <label data-i18n="Status">状态</label>
+        <select id="wishStatusSelect" onchange="markWishStatusChanged()">
+          <option value="0" data-i18n="Draft">草稿</option>
+          <option value="1" data-i18n="Active">进行中</option>
+          <option value="2" data-i18n="Achieved">已达成</option>
+        </select>
+      </div>
+
+      <!-- Linked Countdown -->
+      <label data-i18n="Linked Countdown">关联倒数日</label>
+      <select id="wishLinkedCountdown">
+        <option value="" data-i18n="None">无</option>
+      </select>
+
+      <!-- Steps (edit mode only) -->
+      <div id="wishStepsSection" style="display:none;">
+        <label data-i18n="Steps">步骤拆解</label>
+        <div class="step-list" id="stepList"></div>
+        <div class="step-add-row">
+          <input type="text" id="newStepInput" data-i18n-placeholder="Step content" placeholder="步骤内容" />
+          <button class="btn-small" onclick="addStepToEditor()" data-i18n="Add Step">添加步骤</button>
+        </div>
+      </div>
+
+      <!-- Vision Images (edit mode only) -->
+      <div id="wishImagesSection" style="display:none;">
+      <label data-i18n="Vision Board">附图</label>
+      <span class="image-limit-hint" data-i18n="Max 20 images">最多上传30张</span>
+      <div class="vision-gallery" id="visionGallery"></div>
+      <input type="file" id="wishImageFile" accept="image/*" multiple style="display:none" onchange="onWishImageSelected()" />
+      <button class="btn-small" onclick="document.getElementById('wishImageFile').click()" data-i18n="Upload Image">上传图片</button>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="modal-actions">
+        <button class="btn-delete" id="wishBtnDelete" onclick="deleteWishFromEditor()" data-i18n="Delete">删除</button>
+        <button class="btn-archive" id="wishBtnCelebrate" onclick="celebrateWishFromEditor()" data-i18n="Celebrate!">庆祝达成!</button>
+        <button class="btn-save" onclick="saveWish()" data-i18n="Save">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Wish Detail Sheet ═══ -->
+<div class="detail-sheet-overlay" id="detailSheetOverlay" onclick="if(event.target===this)closeWishDetail()">
+  <div class="detail-sheet" id="detailSheet">
+    <div class="detail-header">
+      <h3 id="detailTitle"></h3>
+      <button class="modal-close" onclick="closeWishDetail()">✕</button>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- ═══ Journey Manager Modal ═══ -->
+<div class="modal-overlay" id="journeyManagerOverlay">
+  <div class="modal modal-settings" id="journeyManagerModal">
+    <div class="modal-header">
+      <h3 data-i18n="Manage Journey">管理心路历程</h3>
+      <button class="modal-close" onclick="closeJourneyManager()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="journeyWishId" />
+      <button class="btn-small" onclick="openJourneyEntryEditor()" style="margin-bottom:12px;" data-i18n="New Entry">+ 新增记录</button>
+      <div class="journey-entry-list" id="journeyEntryList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Journey Entry Editor Modal (Singleton Quill) ═══ -->
+<div class="modal-overlay" id="journeyEntryOverlay">
+  <div class="modal" id="journeyEntryModal">
+    <div class="modal-header">
+      <h3 id="journeyEntryTitle" data-i18n="Edit Entry">编辑记录</h3>
+      <button class="modal-close" onclick="closeJourneyEntryEditor()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="journeyEntryId" />
+      <label data-i18n="Entry Date">记录日期</label>
+      <input type="text" id="journeyEntryDate" class="flatpickr-input" placeholder="选择日期时间" />
+      <label data-i18n="Entry Content">记录内容</label>
+      <div id="journeyQuillContainer"><div id="journeyQuillEditor" style="min-height:180px;"></div></div>
+      <div class="modal-actions">
+        <button class="btn-save" onclick="saveJourneyEntry()" data-i18n="Save Entry">保存记录</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

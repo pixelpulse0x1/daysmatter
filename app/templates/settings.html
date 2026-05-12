@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block body_attrs %} data-page="settings"{% endblock %}
+
+{% block content %}
+<div class="content-header">
+  <h2 data-i18n="Settings">设置</h2>
+</div>
+
+<div class="settings-container" id="settingsContainer">
+
+  <!-- 壁纸 -->
+  <div class="settings-section">
+    <div class="settings-section-header" onclick="toggleSettingsSection(this)" data-i18n="Wallpaper">壁纸<span class="chevron">▶</span></div>
+    <div class="settings-section-body">
+      <button class="btn-manage" onclick="openWallpaperManager()" data-i18n="Wallpaper Management">壁纸管理</button>
+      <label><span data-i18n="Background Type">背景类型</span></label>
+      <select id="setBgType" onchange="onBgTypeChange(); markSettingsDirty();">
+        <option value="image" data-i18n="Image">图片</option>
+        <option value="color" data-i18n="Color">颜色</option>
+      </select>
+      <div id="bgColorRow" style="display:none;">
+        <label><span data-i18n="Select Background Color">选择背景颜色</span> <input type="color" id="setBgColor" value="#f8f6f2" onchange="markSettingsDirty()" /></label>
+      </div>
+      <label><input type="checkbox" id="setWallpaperRandom" onchange="markSettingsDirty()" /> <span data-i18n="Random Mode">随机模式</span></label>
+      <label><span data-i18n="Switch interval (hours)">切换间隔（小时）</span> <input type="number" id="setWallpaperInterval" value="1" min="0.5" max="168" step="0.5" style="width:70px" onchange="markSettingsDirty()" /></label>
+      <label><span data-i18n="BGOpacity">内容区透明度</span> <input type="range" id="setBgOpacity" value="0.6" min="0" max="1" step="0.05" style="width:140px" oninput="updateBgOpacityLive();markSettingsDirty()" /><span id="bgOpacityVal" style="font-size:0.85rem;color:var(--primary);margin-left:4px;">0.6</span></label>
+    </div>
+  </div>
+
+  <!-- 页头背景 -->
+  <div class="settings-section">
+    <div class="settings-section-header" onclick="toggleSettingsSection(this)" data-i18n="Header Background">页头背景<span class="chevron">▶</span></div>
+    <div class="settings-section-body">
+      <label><span data-i18n="Background Type">背景类型</span></label>
+      <select id="setHeaderBgType" onchange="onHeaderBgTypeChange(); markSettingsDirty();">
+        <option value="image" data-i18n="Image">图片</option>
+        <option value="color" data-i18n="Color">颜色</option>
+      </select>
+      <div id="headerBgImageRow">
+        <button class="btn-manage" onclick="openWallpaperManagerForHeader()" data-i18n="Wallpaper Management">选择背景图片</button>
+      </div>
+      <div id="headerBgColorRow" style="display:none;">
+        <label><span data-i18n="Select Background Color">选择背景颜色</span> <input type="color" id="setHeaderBgColor" value="#ffffff" onchange="markSettingsDirty()" /></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- 励志语 -->
+  <div class="settings-section">
+    <div class="settings-section-header" onclick="toggleSettingsSection(this)" data-i18n="Quotes">励志语<span class="chevron">▶</span></div>
+    <div class="settings-section-body">
+      <textarea id="setQuotes" rows="5" data-i18n-placeholder="Separate quotes with blank lines..." placeholder="每条励志语之间用空行分隔..." oninput="markSettingsDirty()"></textarea>
+      <label><span data-i18n="Switch interval (seconds)">切换间隔（秒）</span> <input type="number" id="setQuoteInterval" value="10" min="3" max="300" style="width:80px" onchange="markSettingsDirty()" /></label>
+    </div>
+  </div>
+
+  <!-- 颜色提示 -->
+  <div class="settings-section">
+    <div class="settings-section-header" onclick="toggleSettingsSection(this)" data-i18n="Color Hints">颜色提示<span class="chevron">▶</span></div>
+    <div class="settings-section-body">
+      <label><span data-i18n="Expired background">已过期底色</span> <input type="color" id="setExpiredColor" value="#969696" onchange="markSettingsDirty()" /></label>
+      <label><span data-i18n="Within 30 days background">未来30天内底色</span> <input type="color" id="setSoonColor" value="#FFC7CE" onchange="markSettingsDirty()" /></label>
+      <label><span data-i18n="Within 31-90 days background">未来31-90天底色</span> <input type="color" id="setMidColor" value="#FFD966" onchange="markSettingsDirty()" /></label>
+    </div>
+  </div>
+
+  <!-- 语言 -->
+  <div class="settings-section">
+    <div class="settings-section-header" onclick="toggleSettingsSection(this)" data-i18n="Language">语言<span class="chevron">▶</span></div>
+    <div class="settings-section-body">
+      <select id="setLanguage" onchange="markSettingsDirty()">
+        <option value="zh">中文</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 倒数本管理 -->
+  <div class="settings-section">
+    <div class="settings-section-header" onclick="toggleSettingsSection(this)" data-i18n="Category Management">倒数本管理<span class="chevron">▶</span></div>
+    <div class="settings-section-body">
+      <button class="btn-manage" onclick="openCategoryManager()" data-i18n="Manage Categories">管理倒数本</button>
+    </div>
+  </div>
+
+  <!-- 数据备份 -->
+  <div class="settings-section">
+    <div class="settings-section-header" onclick="toggleSettingsSection(this)" data-i18n="Data Backup">数据备份<span class="chevron">▶</span></div>
+    <div class="settings-section-body">
+      <button class="btn-small" id="btnBackup" onclick="downloadBackup()" data-i18n="Export Backup">导出备份</button>
+    </div>
+  </div>
+
+  <!-- 调试日志 -->
+  <div class="settings-section">
+    <div class="settings-section-header" onclick="toggleSettingsSection(this)" data-i18n="Debug Logging">调试日志<span class="chevron">▶</span></div>
+    <div class="settings-section-body">
+      <label>
+        <input type="checkbox" id="setDebugLogging" onchange="toggleDebugLogging()" />
+        <span data-i18n="Enable debug logging">开启调试日志</span>
+      </label>
+    </div>
+  </div>
+
+
+<div class="settings-actions">
+    <span class="save-toast" id="saveToast" data-i18n="Saved successfully">保存成功</span>
+    <button class="btn-save" id="btnSaveSettings" onclick="saveSettings()" disabled data-i18n="Save">保存</button>
+  </div>
+
+  <!-- 退出登录 -->
+  <div class="settings-logout-section">
+    <button class="btn-logout" onclick="confirmLogout()">
+      <span class="logout-icon">🚪</span>
+      <span data-i18n="Leave Wish Space">离开愿望空间</span>
+    </button>
+  </div>
+</div>
+
+<!-- Logout Confirmation Modal -->
+<div class="modal-overlay" id="logoutConfirmOverlay">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <h3 data-i18n="Leave Wish Space">离开愿望空间</h3>
+      <button class="modal-close" onclick="closeLogoutConfirm()">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <p style="margin-bottom:20px;color:#8c8c8c;line-height:1.6;" data-i18n="Logout confirm text">确定要离开吗？下次开启星门需要再次验证身份。</p>
+      <div class="modal-actions" style="justify-content:center;">
+        <button class="btn-small" onclick="closeLogoutConfirm()" data-i18n="Cancel">取消</button>
+        <button class="btn-logout-confirm" onclick="doLogout()" data-i18n="Confirm Logout">确认退出</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

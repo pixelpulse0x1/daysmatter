@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block body_attrs %} data-page="daysmatter"{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-list" id="categoryList"></div>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="content-header">
+  <h2 id="contentTitle">全部</h2>
+  <button class="btn-add" onclick="openEventModal()" data-i18n="Add Event">+ 添加事项</button>
+</div>
+<div class="event-list" id="eventList"></div>
+{% endblock %}
