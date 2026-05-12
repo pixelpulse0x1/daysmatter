@@ -18,6 +18,8 @@
 
 由于手机app上很多管理软件功能不能自定义化，还有开屏广告、弹窗广告、摇一摇广告！于是就有本项目的诞生。
 
+Memory: 25.37MB
+
 ## ✨界面预览
 
 ### 登录界面
@@ -177,6 +179,8 @@
 
 DaysMatter is a self-hosted, ad-free personal productivity system that combines countdown tracking, intelligent wish management, and rich-text memos. Born from frustration with intrusive ads and limited customization in mobile apps, this open-source solution puts you in complete control of your goals and memories.
 
+Memory: 25.37MB
+
 ## ✨ Live Preview
 
 ### Login Interface
@@ -293,41 +297,7 @@ All user data is stored in Docker volume-mapped host directories:
 | **Deployment** | Docker / Docker Compose / Alpine Linux / Nginx (Optional)    |
 | **Storage**    | SQLite / File System / LocalStorage (Client-side)            |
 
----
 
-## 📈 Roadmap
-
-### 🎯 Version 0.5.0 (Upcoming)
-- [ ] Mobile-responsive design optimization
-- [ ] Wish sharing (read-only public links)
-- [ ] Calendar integration view
-- [ ] Data export to CSV/PDF
-- [ ] Advanced statistics dashboard
-
-### 🔮 Future Vision
-- [ ] Mobile apps (React Native)
-- [ ] Cloud sync option
-- [ ] Plugin system for extensions
-- [ ] API for third-party integration
-- [ ] Team/collaboration features
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please check our [Contributing Guidelines](CONTRIBUTING.md) for details on:
-- Code style and conventions
-- Pull request process
-- Issue reporting
-- Feature requests
-
----
-
-## 🐛 Support & Community
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/yourusername/daysmatter/issues)
-- **Documentation**: [Read the docs](https://docs.daysmatter.app)
-- **Discussions**: [Join the conversation](https://github.com/yourusername/daysmatter/discussions)
 
 ---
 
